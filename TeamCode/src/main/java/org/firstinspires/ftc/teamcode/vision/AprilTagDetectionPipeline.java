@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.vision;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -46,15 +47,18 @@ public class AprilTagDetectionPipeline extends OpenCvPipeline
     private boolean needToSetDecimation;
     private final Object decimationSync = new Object();
 
-    public AprilTagDetectionPipeline(double tagsize, double fx, double fy, double cx, double cy)
+    Telemetry telemetry;
+
+    public AprilTagDetectionPipeline(Telemetry telemetry)
     {
-        this.tagsize = tagsize;
-        this.tagsizeX = tagsize;
-        this.tagsizeY = tagsize;
-        this.fx = fx;
-        this.fy = fy;
-        this.cx = cx;
-        this.cy = cy;
+        this.telemetry = telemetry;
+        fx = 578.272;
+        fy = 578.272;
+        cx = 402.145;
+        cy = 221.506;
+
+        // UNITS ARE METERS
+        tagsize = 0.166;
 
         constructMatrix();
 
@@ -63,7 +67,7 @@ public class AprilTagDetectionPipeline extends OpenCvPipeline
     }
 
     @Override
-    public void finalize()
+    protected void finalize()
     {
         // Might be null if createApriltagDetector() threw an exception
         if(nativeApriltagPtr != 0)
@@ -84,30 +88,36 @@ public class AprilTagDetectionPipeline extends OpenCvPipeline
         // Convert to greyscale
         Imgproc.cvtColor(input, grey, Imgproc.COLOR_RGBA2GRAY);
 
-        synchronized (decimationSync)
-        {
-            if(needToSetDecimation)
-            {
-                AprilTagDetectorJNI.setApriltagDetectorDecimation(nativeApriltagPtr, decimation);
-                needToSetDecimation = false;
-            }
-        }
+//        synchronized (decimationSync)
+//        {
+//            if(needToSetDecimation)
+//            {
+//                AprilTagDetectorJNI.setApriltagDetectorDecimation(nativeApriltagPtr, decimation);
+//                needToSetDecimation = false;
+//            }
+//        }
 
         // Run AprilTag
         detections = AprilTagDetectorJNI.runAprilTagDetectorSimple(nativeApriltagPtr, grey, tagsize, fx, fy, cx, cy);
 
-        synchronized (detectionsUpdateSync)
-        {
-            detectionsUpdate = detections;
-        }
+//        synchronized (detectionsUpdateSync)
+//        {
+//            detectionsUpdate = detections;
+//        }
+
+        telemetry.addData("detections", detections.size());
+        telemetry.update();
 
         // For fun, use OpenCV to draw 6DOF markers on the image. We actually recompute the pose using
         // OpenCV because I haven't yet figured out how to re-use AprilTag's pose in OpenCV.
         for(AprilTagDetection detection : detections)
         {
-            Pose pose = poseFromTrapezoid(detection.corners, cameraMatrix, tagsizeX, tagsizeY);
-            drawAxisMarker(input, tagsizeY/2.0, 6, pose.rvec, pose.tvec, cameraMatrix);
-            draw3dCubeMarker(input, tagsizeX, tagsizeX, tagsizeY, 5, pose.rvec, pose.tvec, cameraMatrix);
+//            Pose pose = poseFromTrapezoid(detection.corners, cameraMatrix, tagsizeX, tagsizeY);
+//            drawAxisMarker(input, tagsizeY/2.0, 6, pose.rvec, pose.tvec, cameraMatrix);
+//            draw3dCubeMarker(input, tagsizeX, tagsizeX, tagsizeY, 5, pose.rvec, pose.tvec, cameraMatrix);
+            Imgproc.circle(input, detection.center, (int) (detection.corners[1].x - detection.corners[0].x), new Scalar(0, 255, 255), 2);
+            telemetry.addData("id", detection.id);
+            telemetry.update();
         }
 
         return input;
