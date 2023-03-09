@@ -39,6 +39,7 @@ public class Drive {
 //        rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         drive = new SampleMecanumDrive(hardwareMap);
+        drive.imu.resetYaw();
 
 //        // Retrieve the IMU from the hardware map
 //        imu = hardwareMap.get(IMU.class, "imu");
@@ -104,6 +105,7 @@ public class Drive {
         Pose2d curPose = PoseStorage.currentPose;
         drive = new SampleMecanumDrive(hardwareMap);
         drive.setPoseEstimate(new Pose2d(curPose.getX(), curPose.getY()));
+        drive.imu.resetYaw();
     }
 }
 
