@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -98,6 +99,29 @@ public class Drive {
         drive.setMotorPowers(frontLeftPower, backLeftPower, backRightPower, frontRightPower);
         drive.update();
         PoseStorage.currentPose = drive.getPoseEstimate();
+        return drive.getPoseEstimate();
+    }
+
+    public Pose2d updateFieldPose(double left_stick_y, double left_stick_x, double right_stick_x) {
+        // Read pose
+        Pose2d poseEstimate = drive.getPoseEstimate();
+
+        // Create a vector from the gamepad x/y inputs
+        // Then, rotate that vector by the inverse of that heading
+        Vector2d input = new Vector2d(
+                -left_stick_y,
+                -left_stick_x
+        ).rotated(-poseEstimate.getHeading());
+
+        // Pass in the rotated input + right stick value for rotation
+        // Rotation is not part of the rotated input thus must be passed in separately
+        drive.setWeightedDrivePower(
+                new Pose2d(
+                        input.getX(),
+                        input.getY(),
+                        -right_stick_x
+                )
+        );
         return drive.getPoseEstimate();
     }
 

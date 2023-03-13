@@ -65,7 +65,7 @@ public class teleOp1 extends LinearOpMode {
             }
 
             claw.update();
-            Pose2d pose = drive.updateField(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+            Pose2d pose = drive.updateFieldPose(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
             arm.update();
             telemetry.addData("Pose X", pose.getX());
             telemetry.addData("Pose Y", pose.getY());
